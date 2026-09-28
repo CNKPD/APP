@@ -1,51 +1,60 @@
-package com.example.psruu;
+package com.example.psruu; // ประกาศว่าไฟล์นี้อยู่ในแพ็กเกจ (Package) ชื่อ com.example.psruu
 
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.util.Base64;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
+import android.app.AlertDialog; // นำเข้าคลาส AlertDialog สำหรับสร้างหน้าต่างแจ้งเตือนหรือแสดงประวัติรีวิว
+import android.content.Context; // นำเข้าคลาส Context สำหรับเข้าถึงระบบภายในแอปพลิเคชัน
+import android.content.Intent; // นำเข้าคลาส Intent สำหรับสั่งเปลี่ยนหน้าจอไปยัง Activity อื่น
+import android.content.SharedPreferences; // นำเข้าคลาสจัดการข้อมูลแบบ Key-Value
+import android.graphics.Bitmap; // นำเข้าคลาสจัดการโครงสร้างข้อมูลภาพ
+import android.graphics.BitmapFactory; // นำเข้าคลาสแปลงไบต์สตรีมให้เป็นภาพ Bitmap
+import android.graphics.Color; // นำเข้าคลาสจัดการสี
+import android.graphics.drawable.ColorDrawable; // นำเข้าคลาสจัดการพื้นหลังสี
+import android.net.Uri; // นำเข้าคลาสจัดการ Uri ของไฟล์หรือรูปภาพ
+import android.os.Bundle; // นำเข้าคลาส Bundle สำหรับส่งผ่านข้อมูลสถานะตอนเริ่มต้น Activity
+import android.text.TextUtils; // นำเข้าคลาสจัดการข้อความ
+import android.util.Base64; // นำเข้าคลาสถอดรหัส Base64 ของรูปภาพ
+import android.view.View; // นำเข้าคลาส View องค์ประกอบ UI ทั่วไป
+import android.view.ViewGroup; // นำเข้าคลาสจัดกลุ่ม View
+import android.widget.BaseAdapter; // นำเข้าอะแดปเตอร์พื้นฐานสำหรับ ListView
+import android.widget.ImageView; // นำเข้าคลาสแสดงรูปภาพ
+import android.widget.LinearLayout; // นำเข้าคลาสจัดเรียงเลย์เอาต์แนวตั้งและแนวนอน
+import android.widget.ListView; // นำเข้าคลาสแสดงรายการ ListView
+import android.widget.TextView; // นำเข้าคลาสแสดงข้อความ
+import android.widget.Toast; // นำเข้าคลาสแสดงข้อความแจ้งเตือนขนาดเล็ก
+import androidx.appcompat.app.AppCompatActivity; // นำเข้าคลาสแม่ข่ายสำหรับการสร้างหน้าจอแอปพลิเคชัน
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Locale;
+import java.io.File; // นำเข้าคลาสจัดการไฟล์
+import java.io.InputStream; // นำเข้าคลาสสตรีมข้อมูลรูปภาพ
+import java.util.List; // นำเข้าโครงสร้างข้อมูลแบบรายการ List
+import java.util.Locale; // นำเข้าคลาสจัดการรูปแบบภาษาและตัวเลข
 
+// [OOP - Inheritance] ประกาศคลาส ProfileActivity สืบทอดมาจาก AppCompatActivity เพื่อทำหน้าที่เป็นหน้าจอโปรไฟล์ผู้ใช้งาน
 public class ProfileActivity extends AppCompatActivity {
 
-    private LinearLayout layoutMyPostsGridContainer;
-    private TextView tvPostCount, tvReviewCount, tvReviewHistoryCount;
-    private TextView tvProfileFacebook, tvProfileInstagram, tvProfilePhone;
-    private LinearLayout btnReviewHistory;
+    // --- ประกาศตัวแปร (Attributes) สำหรับอ้างอิงองค์ประกอบ UI และ Repository ต่างๆ ---
+    private LinearLayout layoutMyPostsGridContainer; // กล่องพื้นที่สำหรับแสดงตารางโพสต์ของผู้ใช้งานแบบไดนามิก
+    private TextView tvPostCount, tvReviewCount, tvReviewHistoryCount; // ข้อความแสดงจำนวนโพสต์, คะแนนรีวิวเฉลี่ย, และจำนวนประวัติรีวิว
+    private TextView tvProfileFacebook, tvProfileInstagram, tvProfilePhone; // ข้อความแสดงช่องทางการติดต่อ (Facebook, IG, เบอร์โทร)
+    private LinearLayout btnReviewHistory; // ปุ่มกดเปิดดูประวัติรีวิว
 
-    private UserRepository userRepository;
-    private ProfileRepository profileRepository;
+    private UserRepository userRepository; // ตัวจัดการข้อมูลผู้ใช้งานระบบ
+    private ProfileRepository profileRepository; // ตัวจัดการข้อมูลโปรไฟล์และโพสต์ของผู้ใช้
 
+    // ==========================================
+    // ส่วนที่ 1: วงจรชีวิตของหน้าจอ (Activity Lifecycle)
+    // ==========================================
+
+    // เมธอด onCreate จะทำงานทันทีเมื่อผู้ใช้เปิดเข้ามาที่หน้าจอโปรไฟล์
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.activity_profile); // กำหนดเลย์เอาต์ XML สำหรับหน้าจอโปรไฟล์
 
+        // สร้างออบเจ็กต์ UserRepository และ ProfileRepository
         userRepository = new UserRepository(this);
         profileRepository = new ProfileRepository(this);
 
         try {
+            // เชื่อมโยงตัวแปร Java กับ ID ในไฟล์ XML
             layoutMyPostsGridContainer = findViewById(R.id.layoutMyPostsGridContainer);
             tvPostCount = findViewById(R.id.tvPostCount);
             tvReviewCount = findViewById(R.id.tvReviewCount);
@@ -55,17 +64,20 @@ public class ProfileActivity extends AppCompatActivity {
             tvProfileInstagram = findViewById(R.id.tvProfileInstagram);
             tvProfilePhone = findViewById(R.id.tvProfilePhone);
 
+            // ดักจับเหตุการณ์คลิกปุ่มดูประวัติรีวิว
             btnReviewHistory = findViewById(R.id.btnReviewHistory);
             if (btnReviewHistory != null) {
                 btnReviewHistory.setOnClickListener(v -> showReviewHistoryDialog());
             }
 
+            // โหลดข้อมูลโปรไฟล์ คะแนนรีวิว จำนวนรีวิว และรายการโพสต์
             loadUserProfile();
             loadRatingData();
             loadReviewCount();
             loadAndDisplayMyPostsGrid();
-            setupBottomNavigation();
+            setupBottomNavigation(); // ตั้งค่าแถบเมนูด้านล่าง
 
+            // ปุ่มเพิ่มโพสต์ใหม่ (พาไปหน้า MainActivity)
             View btnAddPost = findViewById(R.id.btnAddPost);
             if (btnAddPost != null) {
                 btnAddPost.setOnClickListener(v -> {
@@ -78,6 +90,7 @@ public class ProfileActivity extends AppCompatActivity {
                 });
             }
 
+            // ปุ่มออกจากระบบ (พาไปหน้า LoginActivity และเคลียร์หน้าจอเก่าทั้งหมด)
             View btnLogout = findViewById(R.id.btnLogout);
             if (btnLogout != null) {
                 btnLogout.setOnClickListener(v -> {
@@ -96,11 +109,13 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    // เมธอดสำหรับบันทึกคะแนนรีวิวใหม่
     public static void submitNewRating(Context context, float newRating) {
         UserRepository repo = new UserRepository(context);
         repo.saveAverageRating(newRating);
     }
 
+    // ฟังก์ชันโหลดและแสดงจำนวนประวัติรีวิวทั้งหมด
     private void loadReviewCount() {
         try {
             int totalReviews = profileRepository.getReviewCount();
@@ -112,6 +127,7 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    // ฟังก์ชันแสดงหน้าต่าง Dialog ประวัติรีวิว
     private void showReviewHistoryDialog() {
         try {
             View dialogView = getLayoutInflater().inflate(R.layout.dialog_review_history, null);
@@ -119,12 +135,13 @@ public class ProfileActivity extends AppCompatActivity {
                     .setView(dialogView)
                     .create();
 
+            // ปุ่มปิด Dialog
             View btnClose = dialogView.findViewById(R.id.btnCloseDialog);
             if (btnClose != null) {
                 btnClose.setOnClickListener(v -> dialog.dismiss());
             }
 
-            List<ReviewItem> reviewList = profileRepository.getReviewList();
+            List<ReviewItem> reviewList = profileRepository.getReviewList(); // ดึงรายการรีวิว
 
             ListView lvReviewList = dialogView.findViewById(R.id.lvReviewList);
             BaseAdapter adapter = new BaseAdapter() {
@@ -164,13 +181,14 @@ public class ProfileActivity extends AppCompatActivity {
                 dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             }
 
-            dialog.show();
+            dialog.show(); // แสดงหน้าต่าง Dialog
         } catch (Exception e) {
             Toast.makeText(this, "เกิดข้อผิดพลาดในการโหลดประวัติรีวิว", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
     }
 
+    // เมธอด onResume จะทำงานทุกครั้งที่หน้าจอนี้กลับมาแสดงผลต่อ
     @Override
     protected void onResume() {
         super.onResume();
@@ -179,6 +197,7 @@ public class ProfileActivity extends AppCompatActivity {
         loadAndDisplayMyPostsGrid(); // โหลดรายการโพสต์ใหม่ทุกครั้งที่กลับมาที่หน้านี้
     }
 
+    // ฟังก์ชันโหลดข้อมูลโปรไฟล์ผู้ใช้มาแสดงผล
     private void loadUserProfile() {
         try {
             UserProfile profile = userRepository.getUserProfile();
@@ -202,6 +221,7 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    // ฟังก์ชันโหลดข้อมูลคะแนนรีวิวเฉลี่ย
     private void loadRatingData() {
         try {
             float averageRating = userRepository.getAverageRating();
@@ -213,17 +233,23 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    // ==========================================
+    // ส่วนที่ 2: การแสดงผลตารางโพสต์ของผู้ใช้ (Grid Layout)
+    // ==========================================
+
+    // ฟังก์ชันโหลดและจัดเรียงตารางแสดงโพสต์ของผู้ใช้ทีละแถว (2 คอลัมน์ต่อแถว)
     private void loadAndDisplayMyPostsGrid() {
         try {
             if (layoutMyPostsGridContainer == null) return;
-            layoutMyPostsGridContainer.removeAllViews();
+            layoutMyPostsGridContainer.removeAllViews(); // ล้างข้อมูลเก่าทิ้งก่อน
 
-            List<PostItem> allPosts = profileRepository.getAllMyPosts();
+            List<PostItem> allPosts = profileRepository.getAllMyPosts(); // ดึงรายการโพสต์ทั้งหมดของผู้ใช้
 
             if (tvPostCount != null) {
-                tvPostCount.setText(String.valueOf(allPosts.size()));
+                tvPostCount.setText(String.valueOf(allPosts.size())); // แสดงจำนวนโพสต์รวม
             }
 
+            // วนลูปทีละ 2 รายการเพื่อจัดวางเป็น 2 คอลัมน์ซ้าย-ขวา
             for (int i = 0; i < allPosts.size(); i += 2) {
                 LinearLayout rowLayout = new LinearLayout(this);
                 LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
@@ -235,27 +261,29 @@ public class ProfileActivity extends AppCompatActivity {
                 rowLayout.setOrientation(LinearLayout.HORIZONTAL);
 
                 PostItem leftItem = allPosts.get(i);
-                View cardLeft = createProductCardView(leftItem, 8, 0);
+                View cardLeft = createProductCardView(leftItem, 8, 0); // สร้างการ์ดฝั่งซ้าย
                 rowLayout.addView(cardLeft);
 
                 if (i + 1 < allPosts.size()) {
                     PostItem rightItem = allPosts.get(i + 1);
-                    View cardRight = createProductCardView(rightItem, 0, 8);
+                    View cardRight = createProductCardView(rightItem, 0, 8); // สร้างการ์ดฝั่งขวา
                     rowLayout.addView(cardRight);
                 } else {
+                    // ถ้าเหลือโพสต์เศษเดี่ยว ให้สร้าง View ว่างดันทรง
                     View emptyView = new View(this);
                     LinearLayout.LayoutParams emptyParams = new LinearLayout.LayoutParams(0, 0, 1.0f);
                     emptyView.setLayoutParams(emptyParams);
                     rowLayout.addView(emptyView);
                 }
 
-                layoutMyPostsGridContainer.addView(rowLayout);
+                layoutMyPostsGridContainer.addView(rowLayout); // เพิ่มแถวลงในกล่องหลัก
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    // ฟังก์ชันสร้างหน้าตาการ์ดสินค้า/โพสต์แต่ละใบ
     private View createProductCardView(PostItem item, int marginRight, int marginLeft) {
         LinearLayout card = new LinearLayout(this);
         LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
@@ -268,6 +296,7 @@ public class ProfileActivity extends AppCompatActivity {
         card.setPadding(dpToPx(10), dpToPx(10), dpToPx(10), dpToPx(10));
         card.setElevation(dpToPx(1));
 
+        // ป้ายแสดงประเภทโพสต์ (เช่น ขาย, แลก)
         TextView tvBadge = new TextView(this);
         tvBadge.setText(item.getType());
         tvBadge.setTextSize(9);
@@ -275,12 +304,13 @@ public class ProfileActivity extends AppCompatActivity {
         tvBadge.setPadding(dpToPx(6), dpToPx(2), dpToPx(6), dpToPx(2));
         tvBadge.getPaint().setFakeBoldText(true);
         if (item.getType().equals("ขาย")) {
-            tvBadge.setBackgroundColor(0xFF00794C);
+            tvBadge.setBackgroundColor(0xFF00794C); // สีเขียวสำหรับขาย
         } else {
-            tvBadge.setBackgroundColor(0xFFD97706);
+            tvBadge.setBackgroundColor(0xFFD97706); // สีส้มสำหรับประเภทอื่น
         }
         card.addView(tvBadge);
 
+        // รูปภาพประกอบโพสต์
         if (item.getImageUri() != null && !item.getImageUri().isEmpty()) {
             ImageView img = new ImageView(this);
             LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(
@@ -305,6 +335,7 @@ public class ProfileActivity extends AppCompatActivity {
             card.addView(viewImg);
         }
 
+        // หัวข้อโพสต์
         TextView tvTitle = new TextView(this);
         tvTitle.setText(item.getTitle() != null ? item.getTitle() : "");
         tvTitle.setTextSize(12);
@@ -319,6 +350,7 @@ public class ProfileActivity extends AppCompatActivity {
         tvTitle.setLayoutParams(titleParams);
         card.addView(tvTitle);
 
+        // ราคาหรือบัดเจ็ท
         TextView tvPrice = new TextView(this);
         tvPrice.setText(item.getPriceOrBudget() != null ? item.getPriceOrBudget() : "");
         tvPrice.setTextSize(12);
@@ -331,6 +363,7 @@ public class ProfileActivity extends AppCompatActivity {
         tvPrice.setLayoutParams(priceParams);
         card.addView(tvPrice);
 
+        // ปุ่มลบประกาศ
         TextView btnDelete = new TextView(this);
         btnDelete.setText("🗑️ ลบประกาศ");
         btnDelete.setTextSize(11);
@@ -345,12 +378,14 @@ public class ProfileActivity extends AppCompatActivity {
         );
         delParams.setMargins(0, dpToPx(8), 0, 0);
         btnDelete.setLayoutParams(delParams);
+        // ดักจับเหตุการณ์คลิกปุ่มลบประกาศ
         btnDelete.setOnClickListener(v -> deletePost(item.getSourceBoard(), item.getOriginalIndex()));
         card.addView(btnDelete);
 
         return card;
     }
 
+    // ฟังก์ชันช่วยตั้งค่ารูปภาพอย่างปลอดภัย รองรับทั้ง Base64, Uri, และไฟล์โลคอล
     private void safelySetImageUri(ImageView imageView, String uriStr) {
         try {
             if (uriStr == null || uriStr.isEmpty()) {
@@ -397,6 +432,7 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    // ฟังก์ชันสั่งลบโพสต์ออกจากระบบ
     private void deletePost(String sourceBoard, int index) {
         try {
             profileRepository.deletePost(sourceBoard, index);
@@ -409,10 +445,16 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    // ฟังก์ชันแปลงหน่วย dp เป็นพิกเซล (px)
     private int dpToPx(int dp) {
         return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
+    // ==========================================
+    // ส่วนที่ 3: ระบบนำทางด้านล่าง (Bottom Navigation)
+    // ==========================================
+
+    // ฟังก์ชันจัดการการคลิกเมนูด้านล่างเพื่อสลับไปยังหน้าจออื่นๆ
     private void setupBottomNavigation() {
         try {
             LinearLayout navMarket = findViewById(R.id.navMarket);
@@ -439,7 +481,7 @@ public class ProfileActivity extends AppCompatActivity {
             LinearLayout navProfile = findViewById(R.id.navProfile);
             if (navProfile != null) {
                 navProfile.setOnClickListener(v -> {
-                    // อยู่หน้าโปรไฟล์อยู่แล้ว
+                    // อยู่หน้าโปรไฟล์อยู่แล้ว ไม่ต้องทำอะไร
                 });
             }
         } catch (Exception e) {
